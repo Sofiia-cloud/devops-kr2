@@ -1,9 +1,22 @@
-FROM python:latest
+FROM python:3.12-slim
+
+# Создаем непривилегированного пользователя
+RUN useradd --system --no-create-home app
 
 WORKDIR /app
 
-COPY . .
-RUN pip install -r requirements.txt
+# Сначала копируем только зависимости (для кэширования)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 8000
-CMD gunicorn --bind 127.0.0.1:8000 app:app
+# Затем копируем код приложения
+COPY app.py .
+
+# Переключаемся на пользователя app
+USER app
+
+# Открываем порт для нашего варианта
+EXPOSE 8004
+
+# Запускаем gunicorn в exec-форме, слушаем все интерфейсы
+CMD ["gunicorn", "--bind", "0.0.0.0:8004", "app:app"]
