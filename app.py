@@ -1,3 +1,4 @@
+# KR2: Golovushkina
 import os
 import socket
 
